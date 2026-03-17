@@ -35,12 +35,17 @@ app.post("/chat", async (req, res) => {
     );
 
     const data = await response.json();
+    console.log("Gemini API response:", JSON.stringify(data, null, 2));
+    console.log("AI response:", data);
 
-    const reply = data.candidates[0].content.parts[0].text;
+    let reply = "AI could not generate a response.";
 
+    if (data.candidates && data.candidates.length > 0) {
+    reply = data.candidates[0].content.parts[0].text;
+    }
     res.json({ reply });
   } catch (error) {
-    res.json({ reply: "Error communicating with AI.\n", error });
+    res.json({ reply: "Error communicating with AI.\n " + error.message });
   }
 });
 
