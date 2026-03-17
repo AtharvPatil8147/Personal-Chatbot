@@ -58,6 +58,10 @@ header {
   background: #334155;
   color: white;
 }
+.bot {
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
 
 .input-area {
   display: flex;

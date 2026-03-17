@@ -11,6 +11,8 @@ function addMessage(text, className) {
   chatContainer.appendChild(message);
 
   chatContainer.scrollTop = chatContainer.scrollHeight;
+
+  return message;
 }
 
 async function sendMessage() {
@@ -22,7 +24,12 @@ async function sendMessage() {
 
   inputField.value = "";
 
-  addMessage("Typing...", "bot");
+  // Create empty bot message for streaming
+  const botMessage = document.createElement("div");
+  botMessage.classList.add("message", "bot");
+  chatContainer.appendChild(botMessage);
+
+  chatContainer.scrollTop = chatContainer.scrollHeight;
 
   const response = await fetch("/chat", {
     method: "POST",
@@ -32,11 +39,25 @@ async function sendMessage() {
     body: JSON.stringify({ message: userText }),
   });
 
-  const data = await response.json();
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder("utf-8");
 
-  chatContainer.lastChild.remove();
+  let fullText = "";
 
-  addMessage(data.reply, "bot");
+  while (true) {
+const { done, value } = await reader.read();
+
+if (done) break;
+
+const chunk = decoder.decode(value);
+
+fullText += chunk;
+
+// Render markdown continuously
+botMessage.innerHTML = marked.parse(fullText);
+
+chatContainer.scrollTop = chatContainer.scrollHeight;;
+  }
 }
 
 inputField.addEventListener("keypress", function (e) {
